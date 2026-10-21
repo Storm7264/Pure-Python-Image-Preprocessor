@@ -2,93 +2,65 @@
 
 # Image Preprocessor
 
-A small Python program that shows how digital images work, using only plain Python. There are no libraries, so every step is visible: just lists, loops and basic maths.
+A small Python program that works on images stored as plain lists of numbers. It uses no libraries, only basic loops, lists and functions. I wrote it for my MES_1002 assignment to understand how image operations work underneath.
 
-An image is stored as a grid (a list of rows) of numbers from 0 to 255. 0 is black and 255 is white. The program starts with a tiny 5x5 image so you can check every result by eye.
+## How images are stored
+
+A grayscale image is a list of rows, and each row is a list of numbers from 0 (black) to 255 (white). The test image is a 5x5 "L" shape, which is small enough to check by eye. I used an L because it is not symmetric, so flips and rotations are easy to see.
+
+A colour pixel is a list of three numbers: red, green and blue.
 
 ## What it does
 
-**Pixel operations** (each pixel is changed on its own)
-- Invert: turns each value `v` into `255 - v`
-- Brightness: adds or subtracts a number, and keeps the result between 0 and 255
-- Threshold: pixels at or above a cutoff become white (255), and the rest become black (0)
+Pixel operations
+- invert
+- brightness change (values are kept between 0 and 255)
+- threshold (everything becomes black or white)
 
-**Geometric operations** (pixels move around)
-- Flip left-right
-- Flip up-down
-- Rotate 90 degrees clockwise
+Geometric operations
+- flip left to right
+- flip top to bottom
+- rotate 90 degrees clockwise
 
-**Neighbourhood operation** (each pixel looks at the pixels around it)
-- Edge detection with a 3x3 kernel
+Neighbourhood operation
+- edge detection with a 3x3 kernel (-1 around the edges, 8 in the middle)
 
-**Bonus**
-- RGB colour images, where each pixel is `[red, green, blue]`
-- Writing and reading PPM (P3) files by hand
-- Colour to grayscale conversion
-- Colour invert
+Bonus
+- write and read a PPM (P3) file by hand
+- convert a colour image to grayscale
+- invert a colour image
+
+## Border handling
+
+Pixels on the edge of the image have neighbours that do not exist. For those, I use the nearest pixel that does exist. I chose this because it is simple, and because it does not create fake edges along the border of a plain background. Filling the gaps with 0 would do that, and skipping the border would make the output image smaller.
 
 ## How to run
 
-You need Python 3 and nothing else.
+You need Python 3.
 
-```
-python3 imageTools.py
-```
+    python3 imageTools.py
 
-The program prints the original image and the result of every operation. It also creates a small file called `test.ppm`.
+It prints the original image and the result of each operation. It also creates a file called test.ppm, reads it back, and prints it as grayscale.
 
 ## Example
 
-```
-Original                    Rotate right
-   10   10   10   10   10      10   10   10   10   10
-   10  200   10   10   10      10  200  200  200   10
-   10  200   10   10   10      10  200   10   10   10
-   10  200  200  200   10      10  200   10   10   10
-   10   10   10   10   10      10   10   10   10   10
-```
+Original:
 
-## How the edge detection works
+       10   10   10   10   10
+       10  200   10   10   10
+       10  200   10   10   10
+       10  200  200  200   10
+       10   10   10   10   10
 
-The kernel is a 3x3 grid of weights:
+Rotated right:
 
-```
--1 -1 -1
--1  8 -1
--1 -1 -1
-```
-
-For each pixel, the program multiplies the pixel and its 8 neighbours by the matching weights and adds everything up. In a flat area the sum is 0 (black). Where the brightness changes sharply the sum is large (bright), so edges show up.
-
-**Border handling:** pixels on the edge of the image have missing neighbours. When a neighbour is outside the image, the program uses the nearest pixel that does exist (the border pixel is "copied" outward). This was chosen because:
-- it is simple to understand and to code,
-- a plain background does not create fake edges along the border,
-- the output image keeps the same size as the input.
-
-## PPM format
-
-PPM (P3) is a plain text image format. It is easy to read by hand:
-
-```
-P3
-3 3
-255
-255 0 0
-0 255 0
-...
-```
-
-The lines are: the magic word `P3`, then width and height, then the maximum value (255), then one line of `red green blue` per pixel.
-
-## Project layout
-
-```
-imageTools.py   all the code
-README.md       this file
-test.ppm        created when you run the program
-```
+       10   10   10   10   10
+       10  200  200  200   10
+       10  200   10   10   10
+       10  200   10   10   10
+       10   10   10   10   10
 
 ## Notes
 
-- All results are returned as new images. The original image is never changed.
-- Variable names are kept short and simple on purpose, and the code uses plain loops so it is easy to follow.
+- Every function returns a new image and leaves the original alone.
+- On this tiny image the edge detection output looks the same as the threshold output, because the difference between the L and the background is so large that it hits 255. It looks different on smoother images.
